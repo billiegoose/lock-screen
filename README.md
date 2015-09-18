@@ -12,6 +12,11 @@ however I am slowly ripping out the guts to simplify it._
 ## Current Status
 It's a personal project. Feel free to download the source & compile it.
 
+## Installation
+Copy bin\Release\InvisbleLockScreen.scr to C:\Windows\SysWOW64.
+In Screen Saver Settings, pick "InvisibleLockScreen" as your screensaver.
+You can leave "On resume, display logon screen" unchecked.
+
 ## Similar Software
 There are programs out there (e.g. Pro Key Lock, Transparent Screen Lock) that can lock your computer's keyboard/mouse while still showing the running applications, which can be very useful. 
 However they rely on hacky techniques like intercepting Win32 Messages and they charge money. 
