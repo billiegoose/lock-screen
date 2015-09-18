@@ -1,5 +1,5 @@
 # Transparent Lock Screen for Windows 
-(technically a transparent screensaver that also locks)
+(also a transparent screensaver)
 
 It's a screensaver with 1% opacity. Unlike most screensavers, it doesn't end on mouse movement, just on clicks or
 keyboard presses. And the last thing it does before it exists is call LockWorkStation() so if someone
@@ -12,7 +12,10 @@ however I am slowly ripping out the guts to simplify it._
 ## Current Status
 It's a personal project. Feel free to download the source & compile it.
 
-## Installation
+## To Use Manually
+Set up a trigger of some sort (say with AutoHotKey) to run "InvisibleLockScreen.scr /s".
+
+## To Use As Screen Saver
 Copy bin\Release\InvisbleLockScreen.scr to C:\Windows\SysWOW64.
 In Screen Saver Settings, pick "InvisibleLockScreen" as your screensaver.
 You can leave "On resume, display logon screen" unchecked.
