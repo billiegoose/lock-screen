@@ -695,7 +695,7 @@ namespace Screensavers
 
                 //form.BackColor = Color.Lime;
                 //form.TransparencyKey = Color.Lime;
-                form.Opacity = 0.3;
+                form.Opacity = 0.01;
 
 				this.screensaver.PreUpdate += new EventHandler(screensaver_PreUpdate);
 				this.screensaver.PostUpdate += new EventHandler(screensaver_PostUpdate);

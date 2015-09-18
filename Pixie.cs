@@ -35,7 +35,7 @@ namespace InvisibleLockscreen
 
         public virtual void Draw()
         {
-            screensaver.Graphics0.DrawString("Will is Amazing", new Font("OCR A Extended", 8), brush, new PointF(x, y));
+            //screensaver.Graphics0.DrawString("Will is Amazing", new Font("OCR A Extended", 8), brush, new PointF(x, y));
         }
     }
 }
