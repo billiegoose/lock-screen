@@ -520,6 +520,7 @@ namespace Screensavers
 #endif
 			primary.FormBorderStyle = FormBorderStyle.None;
 			primary.Text = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
+            primary.Icon = new Icon("Resources/blank_screen.ico");
 
 			foreach (Screen screen in Screen.AllScreens)
 			{
@@ -537,8 +538,9 @@ namespace Screensavers
 				form.Size = screen.Bounds.Size;
 				form.FormBorderStyle = FormBorderStyle.None;
 				form.Text = primary.Text;
+                form.Icon = new Icon("Resources/blank_screen.ico");
 
-				windows.Add(new Window(this, form));
+                windows.Add(new Window(this, form));
 			}
 
 			windows.Insert(0, new Window(this, primary));
