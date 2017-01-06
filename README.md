@@ -9,8 +9,11 @@ None of your co-workers will be pranking you now!
 _Currently a derivative of [Write a Screensaver that Actually Works](http://www.codeproject.com/Articles/14081/Write-a-Screensaver-that-Actually-Works),
 however I am slowly ripping out the guts to simplify it._
 
+## Download
+There is a [compiled version available](https://github.com/wmhilton/lock-screen/releases).
+
 ## Current Status
-It's a personal project. Feel free to download the source & compile it.
+It's a personal project. Feel free to download the source & compile it, or use it as a base for a new screensaver project. I am not actively working on this project now that I telecommute and have no physically copresent coworkers trying to prank me.
 
 ## To Use Manually
 Set up a trigger of some sort (say with AutoHotKey) to run "InvisibleLockScreen.scr /s".
