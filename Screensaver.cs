@@ -22,6 +22,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace Screensavers
 {
@@ -625,7 +626,27 @@ namespace Screensavers
             StartUpdating();
         }
 
-        #region Steal Focus TODO: sleep on loop
+        void Form_FormClosing(object sender, FormClosingEventArgs e)
+		{
+            if (!ctrlLPressed)
+            {
+                if (e.CloseReason == CloseReason.UserClosing)
+                    e.Cancel = true;
+            }
+            else
+            {
+                toggleKeyboardHook(false);
+                getFocusThread.Abort();
+
+                StopUpdating();
+                LockWorkStation();
+                if (Exit != null)
+                    Exit(this, new EventArgs());
+                e.Cancel = false;
+            }
+		}
+
+        #region Steal Focus
 
         //Delegates for safe multi-threading.
         delegate void DelegateGetFocus();
@@ -653,6 +674,7 @@ namespace Screensavers
             while (true)
             {
                 getFocus();
+                //Thread.Sleep(1000);
             }
         }
 
@@ -673,36 +695,8 @@ namespace Screensavers
 
         #endregion
 
-        void Form_FormClosing(object sender, FormClosingEventArgs e)
-		{
-            if (altF4Pressed)
-            {
-                if (e.CloseReason == CloseReason.UserClosing)
-                    e.Cancel = true;
-                altF4Pressed = false;
-            }
-            else if (!ctrlLPressed)
-            {
-                if (e.CloseReason == CloseReason.UserClosing)
-                    e.Cancel = true;
-            }
-            else
-            {
-                ctrlLPressed = false;
-                toggleKeyboardHook(false);
-                getFocusThread.Abort();
-
-                StopUpdating();
-                LockWorkStation();
-                if (Exit != null)
-                    Exit(this, new EventArgs());
-                e.Cancel = false;
-            }
-		}
-
         #region Low Level Keyboard Hook
 
-        private bool altF4Pressed;
         private bool ctrlLPressed;
 
         private const int WH_KEYBOARD_LL = 13;
@@ -723,28 +717,13 @@ namespace Screensavers
 
         private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
         {
-            if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
-            {
-                int vkCode = Marshal.ReadInt32(lParam);
+            int vkCode = Marshal.ReadInt32(lParam);
+            List<Keys> acceptedKeys = new List<Keys> { Keys.LControlKey, Keys.RControlKey, Keys.L };
 
-                switch ((Keys)vkCode)
-                {
-                    //case Keys.Control:
-                    //case Keys.ControlKey:
-                    //case Keys.LControlKey:
-                    //case Keys.RControlKey:
-                    case Keys.Tab:
-                    case Keys.LWin:
-                    case Keys.RWin:
-                    case Keys.Escape:
-                    case Keys.Alt:
-                        return (IntPtr)1;
-                }
-
-                Console.WriteLine((Keys)vkCode);
-                Debug.WriteLine((Keys)vkCode);
-            }
-            return CallNextHookEx(_hookID, nCode, wParam, lParam);
+            if (acceptedKeys.Contains((Keys)vkCode))
+                return CallNextHookEx(_hookID, nCode, wParam, lParam);
+            else
+                return (IntPtr)1;
         }
 
 
@@ -934,10 +913,7 @@ namespace Screensavers
                 if (KeyUp != null)
                     KeyUp(this, e);
 
-                if (e.Alt && e.KeyCode == Keys.F4)
-                    screensaver.altF4Pressed = true;
-
-                else if (e.Control && e.KeyCode == Keys.L)
+                if (e.Control && e.KeyCode == Keys.L)
                 {
                     screensaver.ctrlLPressed = true;
                     screensaver.OnKeyboardInput();
@@ -949,10 +925,7 @@ namespace Screensavers
                 if (KeyDown != null)
                     KeyDown(this, e);
 
-                if (e.Alt && e.KeyCode == Keys.F4)
-                    screensaver.altF4Pressed = true;
-
-                else if (e.Control && e.KeyCode == Keys.L)
+                if (e.Control && e.KeyCode == Keys.L)
                 {
                     screensaver.ctrlLPressed = true;
                     screensaver.OnKeyboardInput();
