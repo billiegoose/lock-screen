@@ -619,9 +619,10 @@ namespace Screensavers
 			if (Window0 != null && Window0.Form != null)
                 Window0.Form.FormClosing += new FormClosingEventHandler(Form_FormClosing);
 
+            // enable keyboard hook
             toggleKeyboardHook(true);
-            m_getFocus = new DelegateGetFocus(this.getFocus);
-            spawnThread(keepFocus);
+            //m_getFocus = new DelegateGetFocus(this.getFocus);
+            //spawnThread(keepFocus);
 
             StartUpdating();
         }
@@ -635,8 +636,9 @@ namespace Screensavers
             }
             else
             {
+                // disable keyboard hook
                 toggleKeyboardHook(false);
-                getFocusThread.Abort();
+                //getFocusThread.Abort();
 
                 StopUpdating();
                 LockWorkStation();
