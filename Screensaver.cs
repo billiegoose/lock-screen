@@ -20,6 +20,8 @@ using System.Drawing;
 using System.Collections;
 using System.Text;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Diagnostics;
 
 namespace Screensavers
 {
@@ -52,13 +54,13 @@ namespace Screensavers
 		{
 		}
 
-		void  framerateTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+		void framerateTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
 		{
 			achievedFramerate = updatesThisSec;
 			updatesThisSec = 0;
 			if (OneSecondTick != null)
 				OneSecondTick(this, new EventArgs());
-		}
+        }
 
 		/// <summary>
 		/// Occurs before the screensaver windows close.
@@ -87,7 +89,7 @@ namespace Screensavers
 
 		void StartUpdating()
 		{
-			timerCallback = new TimeCallback(TimerCallback);
+            timerCallback = new TimeCallback(TimerCallback);
 			//TIME_KILL_SYNCHRONOUS = 0x0100
 			//TIME_PERIODIC = 0x0001
 			timerId = timeSetEvent((int)(1000/(double)framerate), 0, timerCallback, 0, 0x0101);
@@ -98,8 +100,7 @@ namespace Screensavers
 				DoUpdate();
 				Application.DoEvents();
 				updateEvent.Reset();
-			}
-
+            }
 		}
 
 		void StopUpdating()
@@ -592,7 +593,6 @@ namespace Screensavers
 
 		private void RunWindowed()
 		{
-
 			Form form = new Form();
 			form.FormBorderStyle = FormBorderStyle.FixedSingle;
 			form.Text = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
@@ -610,33 +610,174 @@ namespace Screensavers
 			InitializeAndStart();
 		}
 
-		void InitializeAndStart()
+        void InitializeAndStart()
 		{
 			if (Initialize != null)
 				Initialize(this, new EventArgs());
 
 			if (Window0 != null && Window0.Form != null)
-				Window0.Form.FormClosing += new FormClosingEventHandler(Form_FormClosing);
+                Window0.Form.FormClosing += new FormClosingEventHandler(Form_FormClosing);
 
-			StartUpdating();
-		}
+            toggleKeyboardHook(true);
+            m_getFocus = new DelegateGetFocus(this.getFocus);
+            spawnThread(keepFocus);
 
-		void Form_FormClosing(object sender, FormClosingEventArgs e)
+            StartUpdating();
+        }
+
+        #region Steal Focus TODO: sleep on loop
+
+        //Delegates for safe multi-threading.
+        delegate void DelegateGetFocus();
+        private DelegateGetFocus m_getFocus;
+        Thread getFocusThread;
+
+        //Spawns a new Thread.
+        private void spawnThread(ThreadStart ts)
+        {
+            try
+            {
+                getFocusThread = new Thread(ts);
+                getFocusThread.Start();
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.Message, "Exception!", MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+        }
+
+        //Continuously call getFocus.
+        private void keepFocus()
+        {
+            while (true)
+            {
+                getFocus();
+            }
+        }
+
+        //Keeps Form on top and gives focus.
+        private void getFocus()
+        {
+            //If we need to invoke this call from another thread.
+            if (Window0.Form.InvokeRequired)
+            {
+                Window0.Form.Invoke(m_getFocus, new object[] { });
+            }
+            //Otherwise, we're safe.
+            else
+            {
+                Window0.Form.Activate();
+            }
+        }
+
+        #endregion
+
+        void Form_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			StopUpdating();
-            LockWorkStation();
-            if (Exit != null)
-				Exit(this, new EventArgs());            
-			e.Cancel = false;
+            if (altF4Pressed)
+            {
+                if (e.CloseReason == CloseReason.UserClosing)
+                    e.Cancel = true;
+                altF4Pressed = false;
+            }
+            else if (!ctrlLPressed)
+            {
+                if (e.CloseReason == CloseReason.UserClosing)
+                    e.Cancel = true;
+            }
+            else
+            {
+                ctrlLPressed = false;
+                toggleKeyboardHook(false);
+                getFocusThread.Abort();
+
+                StopUpdating();
+                LockWorkStation();
+                if (Exit != null)
+                    Exit(this, new EventArgs());
+                e.Cancel = false;
+            }
 		}
 
-		#region IDisposable Members
+        #region Low Level Keyboard Hook
 
-		bool isEnded = false;
+        private bool altF4Pressed;
+        private bool ctrlLPressed;
 
-		#endregion
+        private const int WH_KEYBOARD_LL = 13;
+        private const int WM_KEYDOWN = 0x0100;
+        private static LowLevelKeyboardProc _proc = HookCallback;
+        private static IntPtr _hookID = IntPtr.Zero;
 
-		void OnMouseMove()
+        private static IntPtr SetHook(LowLevelKeyboardProc proc)
+        {
+            using (Process curProcess = Process.GetCurrentProcess())
+            using (ProcessModule curModule = curProcess.MainModule)
+            {
+                return SetWindowsHookEx(WH_KEYBOARD_LL, proc, GetModuleHandle(curModule.ModuleName), 0);
+            }
+        }
+
+        private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
+
+        private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+        {
+            if (nCode >= 0 && wParam == (IntPtr)WM_KEYDOWN)
+            {
+                int vkCode = Marshal.ReadInt32(lParam);
+
+                switch ((Keys)vkCode)
+                {
+                    //case Keys.Control:
+                    //case Keys.ControlKey:
+                    //case Keys.LControlKey:
+                    //case Keys.RControlKey:
+                    case Keys.Tab:
+                    case Keys.LWin:
+                    case Keys.RWin:
+                    case Keys.Escape:
+                    case Keys.Alt:
+                        return (IntPtr)1;
+                }
+
+                Console.WriteLine((Keys)vkCode);
+                Debug.WriteLine((Keys)vkCode);
+            }
+            return CallNextHookEx(_hookID, nCode, wParam, lParam);
+        }
+
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool UnhookWindowsHookEx(IntPtr hhk);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        private static extern IntPtr GetModuleHandle(string lpModuleName);
+
+        public void toggleKeyboardHook(bool enable)
+        {
+            if (enable)
+                _hookID = SetHook(_proc);
+            else
+                UnhookWindowsHookEx(_hookID);
+        }
+
+        #endregion
+
+        #region IDisposable Members
+
+        bool isEnded = false;
+
+        #endregion
+
+        void OnMouseMove()
 		{
 			//if (closeOnMouseMove)
 			//{
@@ -649,17 +790,18 @@ namespace Screensavers
 
 		void OnKeyboardInput()
 		{
-			if (closeOnMouseMove)
-			{
+			//if (closeOnMouseMove)
+			//{
 				if (Window0.Form != null)
 					Window0.Form.Close();
 				else
 					Application.Exit();
-			}
+			//}
 		}
 
 		void OnMouseClick()
 		{
+            /*
             if (closeOnMouseMove)
 			{
 				if (Window0.Form != null)
@@ -669,6 +811,7 @@ namespace Screensavers
                     Application.Exit();
                 }					
 			}
+            */
 		}
 
 		/// <summary>
@@ -714,7 +857,7 @@ namespace Screensavers
 				this.screensaver.PostUpdate += new EventHandler(screensaver_PostUpdate);
 			}
 
-			bool doubleBuffer = false;
+            bool doubleBuffer = false;
 			bool doubleBufferSet = false;
 
 			/// <summary>
@@ -776,27 +919,44 @@ namespace Screensavers
 				}
 			}
 
-			#region Keyboard and Mouse Events
+            #region Keyboard and Mouse Events
 
-			void form_KeyPress(object sender, KeyPressEventArgs e)
+            void form_KeyPress(object sender, KeyPressEventArgs e)
 			{
-				if (KeyPress != null)
-					KeyPress(this, e);
-				screensaver.OnKeyboardInput();
-			}
+                if (KeyPress != null)
+                    KeyPress(this, e);
+
+                //screensaver.OnKeyboardInput();
+            }
 
 			void form_KeyUp(object sender, KeyEventArgs e)
 			{
-				if (KeyUp != null)
-					KeyUp(this, e);
-				screensaver.OnKeyboardInput();
-			}
+                if (KeyUp != null)
+                    KeyUp(this, e);
+
+                if (e.Alt && e.KeyCode == Keys.F4)
+                    screensaver.altF4Pressed = true;
+
+                else if (e.Control && e.KeyCode == Keys.L)
+                {
+                    screensaver.ctrlLPressed = true;
+                    screensaver.OnKeyboardInput();
+                }
+            }
 
 			void form_KeyDown(object sender, KeyEventArgs e)
 			{
-				if (KeyDown != null)
-					KeyDown(this, e);
-				screensaver.OnKeyboardInput();
+                if (KeyDown != null)
+                    KeyDown(this, e);
+
+                if (e.Alt && e.KeyCode == Keys.F4)
+                    screensaver.altF4Pressed = true;
+
+                else if (e.Control && e.KeyCode == Keys.L)
+                {
+                    screensaver.ctrlLPressed = true;
+                    screensaver.OnKeyboardInput();
+                }
 			}
 
 			void form_MouseWheel(object sender, MouseEventArgs e)
