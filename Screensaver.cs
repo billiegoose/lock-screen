@@ -621,8 +621,6 @@ namespace Screensavers
 
             // enable keyboard hook
             toggleKeyboardHook(true);
-            //m_getFocus = new DelegateGetFocus(this.getFocus);
-            //spawnThread(keepFocus);
 
             StartUpdating();
         }
@@ -636,10 +634,6 @@ namespace Screensavers
             }
             else
             {
-                // disable keyboard hook
-                toggleKeyboardHook(false);
-                //getFocusThread.Abort();
-
                 StopUpdating();
                 LockWorkStation();
                 if (Exit != null)
@@ -647,55 +641,6 @@ namespace Screensavers
                 e.Cancel = false;
             }
 		}
-
-        #region Steal Focus
-
-        //Delegates for safe multi-threading.
-        delegate void DelegateGetFocus();
-        private DelegateGetFocus m_getFocus;
-        Thread getFocusThread;
-
-        //Spawns a new Thread.
-        private void spawnThread(ThreadStart ts)
-        {
-            try
-            {
-                getFocusThread = new Thread(ts);
-                getFocusThread.Start();
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show(e.Message, "Exception!", MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-            }
-        }
-
-        //Continuously call getFocus.
-        private void keepFocus()
-        {
-            while (true)
-            {
-                getFocus();
-                //Thread.Sleep(1000);
-            }
-        }
-
-        //Keeps Form on top and gives focus.
-        private void getFocus()
-        {
-            //If we need to invoke this call from another thread.
-            if (Window0.Form.InvokeRequired)
-            {
-                Window0.Form.Invoke(m_getFocus, new object[] { });
-            }
-            //Otherwise, we're safe.
-            else
-            {
-                Window0.Form.Activate();
-            }
-        }
-
-        #endregion
 
         #region Low Level Keyboard Hook
 
@@ -771,13 +716,13 @@ namespace Screensavers
 
 		void OnKeyboardInput()
 		{
-			//if (closeOnMouseMove)
-			//{
-				if (Window0.Form != null)
-					Window0.Form.Close();
-				else
-					Application.Exit();
-			//}
+            // disable keyboard hook
+            toggleKeyboardHook(false);
+
+            if (Window0.Form != null)
+				Window0.Form.Close();
+			else
+				Application.Exit();
 		}
 
 		void OnMouseClick()
