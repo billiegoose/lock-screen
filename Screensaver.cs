@@ -520,7 +520,7 @@ namespace Screensavers
 #endif
 			primary.FormBorderStyle = FormBorderStyle.None;
 			primary.Text = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
-            primary.Icon = new Icon("Resources/blank_screen.ico");
+            primary.Icon = InvisbleLockScreen.Properties.Resources.icon;
 
 			foreach (Screen screen in Screen.AllScreens)
 			{
@@ -538,7 +538,7 @@ namespace Screensavers
 				form.Size = screen.Bounds.Size;
 				form.FormBorderStyle = FormBorderStyle.None;
 				form.Text = primary.Text;
-                form.Icon = new Icon("Resources/blank_screen.ico");
+                form.Icon = InvisbleLockScreen.Properties.Resources.icon;
 
                 windows.Add(new Window(this, form));
 			}
@@ -574,8 +574,9 @@ namespace Screensavers
 			form.FormBorderStyle = FormBorderStyle.None;
 			form.StartPosition = FormStartPosition.Manual;
 			form.Text = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
+            form.Icon = InvisbleLockScreen.Properties.Resources.icon;
 
-			windows = new WindowCollection(new Window[] { new Window(this, form) });
+            windows = new WindowCollection(new Window[] { new Window(this, form) });
 
 			form.Show();
 			InitializeAndStart();
@@ -596,7 +597,8 @@ namespace Screensavers
 			Form form = new Form();
 			form.FormBorderStyle = FormBorderStyle.FixedSingle;
 			form.Text = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
-			form.StartPosition = FormStartPosition.CenterScreen;
+            form.Icon = InvisbleLockScreen.Properties.Resources.icon;
+            form.StartPosition = FormStartPosition.CenterScreen;
 			form.BackColor = Color.Black;
 #if !DEBUG
 			form.TopMost = true;
