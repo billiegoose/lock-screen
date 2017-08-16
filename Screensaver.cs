@@ -476,7 +476,7 @@ namespace Screensavers
 				sw.WriteLine(SettingsText);
 			}
 
-			MessageBox.Show(sw.ToString(), "PixieSaver", MessageBoxButtons.OK);
+			MessageBox.Show(sw.ToString(), System.Reflection.Assembly.GetExecutingAssembly().GetName().Name, MessageBoxButtons.OK);
 		}
 
 		System.Threading.AutoResetEvent previewShutdownEvent = new System.Threading.AutoResetEvent(false);
