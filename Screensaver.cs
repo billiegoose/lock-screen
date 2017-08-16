@@ -61,7 +61,7 @@ namespace Screensavers
 			updatesThisSec = 0;
 			if (OneSecondTick != null)
 				OneSecondTick(this, new EventArgs());
-        }
+		}
 
 		/// <summary>
 		/// Occurs before the screensaver windows close.
@@ -79,10 +79,10 @@ namespace Screensavers
 		[DllImport("winmm.dll")]
 		static extern int timeGetTime();
 
-        [DllImport("user32.dll")]
-        public static extern bool LockWorkStation();
+		[DllImport("user32.dll")]
+		public static extern bool LockWorkStation();
 
-        delegate void TimeCallback(uint id, uint msg, IntPtr user, IntPtr param1, IntPtr param2);
+		delegate void TimeCallback(uint id, uint msg, IntPtr user, IntPtr param1, IntPtr param2);
 
 		TimeCallback timerCallback;
 
@@ -90,7 +90,7 @@ namespace Screensavers
 
 		void StartUpdating()
 		{
-            timerCallback = new TimeCallback(TimerCallback);
+			timerCallback = new TimeCallback(TimerCallback);
 			//TIME_KILL_SYNCHRONOUS = 0x0100
 			//TIME_PERIODIC = 0x0001
 			timerId = timeSetEvent((int)(1000/(double)framerate), 0, timerCallback, 0, 0x0101);
@@ -101,7 +101,7 @@ namespace Screensavers
 				DoUpdate();
 				Application.DoEvents();
 				updateEvent.Reset();
-            }
+			}
 		}
 
 		void StopUpdating()
@@ -522,7 +522,7 @@ namespace Screensavers
 #endif
 			primary.FormBorderStyle = FormBorderStyle.None;
 			primary.Text = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
-            primary.Icon = InvisbleLockScreen.Properties.Resources.icon;
+			primary.Icon = InvisbleLockScreen.Properties.Resources.icon;
 
 			foreach (Screen screen in Screen.AllScreens)
 			{
@@ -540,9 +540,9 @@ namespace Screensavers
 				form.Size = screen.Bounds.Size;
 				form.FormBorderStyle = FormBorderStyle.None;
 				form.Text = primary.Text;
-                form.Icon = InvisbleLockScreen.Properties.Resources.icon;
+				form.Icon = InvisbleLockScreen.Properties.Resources.icon;
 
-                windows.Add(new Window(this, form));
+				windows.Add(new Window(this, form));
 			}
 
 			windows.Insert(0, new Window(this, primary));
@@ -576,9 +576,9 @@ namespace Screensavers
 			form.FormBorderStyle = FormBorderStyle.None;
 			form.StartPosition = FormStartPosition.Manual;
 			form.Text = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
-            form.Icon = InvisbleLockScreen.Properties.Resources.icon;
+			form.Icon = InvisbleLockScreen.Properties.Resources.icon;
 
-            windows = new WindowCollection(new Window[] { new Window(this, form) });
+			windows = new WindowCollection(new Window[] { new Window(this, form) });
 
 			form.Show();
 			InitializeAndStart();
@@ -598,8 +598,8 @@ namespace Screensavers
 			Form form = new Form();
 			form.FormBorderStyle = FormBorderStyle.FixedSingle;
 			form.Text = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
-            form.Icon = InvisbleLockScreen.Properties.Resources.icon;
-            form.StartPosition = FormStartPosition.CenterScreen;
+			form.Icon = InvisbleLockScreen.Properties.Resources.icon;
+			form.StartPosition = FormStartPosition.CenterScreen;
 			form.BackColor = Color.Black;
 #if !DEBUG
 			form.TopMost = true;
@@ -613,99 +613,99 @@ namespace Screensavers
 			InitializeAndStart();
 		}
 
-        void InitializeAndStart()
+		void InitializeAndStart()
 		{
 			if (Initialize != null)
 				Initialize(this, new EventArgs());
 
 			if (Window0 != null && Window0.Form != null)
-                Window0.Form.FormClosing += new FormClosingEventHandler(Form_FormClosing);
+				Window0.Form.FormClosing += new FormClosingEventHandler(Form_FormClosing);
 
-            // enable keyboard hook
-            toggleKeyboardHook(true);
+			// enable keyboard hook
+			toggleKeyboardHook(true);
 
-            StartUpdating();
-        }
-
-        void Form_FormClosing(object sender, FormClosingEventArgs e)
-		{
-            if (!ctrlLPressed)
-            {
-                if (e.CloseReason == CloseReason.UserClosing)
-                    e.Cancel = true;
-            }
-            else
-            {
-                StopUpdating();
-                LockWorkStation();
-                if (Exit != null)
-                    Exit(this, new EventArgs());
-                e.Cancel = false;
-            }
+			StartUpdating();
 		}
 
-        #region Low Level Keyboard Hook
+		void Form_FormClosing(object sender, FormClosingEventArgs e)
+		{
+			if (!ctrlLPressed)
+			{
+				if (e.CloseReason == CloseReason.UserClosing)
+					e.Cancel = true;
+			}
+			else
+			{
+				StopUpdating();
+				LockWorkStation();
+				if (Exit != null)
+					Exit(this, new EventArgs());
+				e.Cancel = false;
+			}
+		}
 
-        private bool ctrlLPressed;
+		#region Low Level Keyboard Hook
 
-        private const int WH_KEYBOARD_LL = 13;
-        private const int WM_KEYDOWN = 0x0100;
-        private static LowLevelKeyboardProc _proc = HookCallback;
-        private static IntPtr _hookID = IntPtr.Zero;
+		private bool ctrlLPressed;
 
-        private static IntPtr SetHook(LowLevelKeyboardProc proc)
-        {
-            using (Process curProcess = Process.GetCurrentProcess())
-            using (ProcessModule curModule = curProcess.MainModule)
-            {
-                return SetWindowsHookEx(WH_KEYBOARD_LL, proc, GetModuleHandle(curModule.ModuleName), 0);
-            }
-        }
+		private const int WH_KEYBOARD_LL = 13;
+		private const int WM_KEYDOWN = 0x0100;
+		private static LowLevelKeyboardProc _proc = HookCallback;
+		private static IntPtr _hookID = IntPtr.Zero;
 
-        private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
+		private static IntPtr SetHook(LowLevelKeyboardProc proc)
+		{
+			using (Process curProcess = Process.GetCurrentProcess())
+			using (ProcessModule curModule = curProcess.MainModule)
+			{
+				return SetWindowsHookEx(WH_KEYBOARD_LL, proc, GetModuleHandle(curModule.ModuleName), 0);
+			}
+		}
 
-        private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
-        {
-            int vkCode = Marshal.ReadInt32(lParam);
-            List<Keys> acceptedKeys = new List<Keys> { Keys.LControlKey, Keys.RControlKey, Keys.L };
+		private delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);
 
-            if (acceptedKeys.Contains((Keys)vkCode))
-                return CallNextHookEx(_hookID, nCode, wParam, lParam);
-            else
-                return (IntPtr)1;
-        }
+		private static IntPtr HookCallback(int nCode, IntPtr wParam, IntPtr lParam)
+		{
+			int vkCode = Marshal.ReadInt32(lParam);
+			List<Keys> acceptedKeys = new List<Keys> { Keys.LControlKey, Keys.RControlKey, Keys.L };
+
+			if (acceptedKeys.Contains((Keys)vkCode))
+				return CallNextHookEx(_hookID, nCode, wParam, lParam);
+			else
+				return (IntPtr)1;
+		}
 
 
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);
+		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+		private static extern IntPtr SetWindowsHookEx(int idHook, LowLevelKeyboardProc lpfn, IntPtr hMod, uint dwThreadId);
 
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool UnhookWindowsHookEx(IntPtr hhk);
+		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		private static extern bool UnhookWindowsHookEx(IntPtr hhk);
 
-        [DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
+		[DllImport("user32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+		private static extern IntPtr CallNextHookEx(IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam);
 
-        [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        private static extern IntPtr GetModuleHandle(string lpModuleName);
+		[DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+		private static extern IntPtr GetModuleHandle(string lpModuleName);
 
-        public void toggleKeyboardHook(bool enable)
-        {
-            if (enable)
-                _hookID = SetHook(_proc);
-            else
-                UnhookWindowsHookEx(_hookID);
-        }
+		public void toggleKeyboardHook(bool enable)
+		{
+			if (enable)
+				_hookID = SetHook(_proc);
+			else
+				UnhookWindowsHookEx(_hookID);
+		}
 
-        #endregion
+		#endregion
 
-        #region IDisposable Members
+		#region IDisposable Members
 
-        bool isEnded = false;
+		bool isEnded = false;
 
-        #endregion
+		#endregion
 
-        void OnMouseMove()
+		void OnMouseMove()
 		{
 			//if (closeOnMouseMove)
 			//{
@@ -718,10 +718,10 @@ namespace Screensavers
 
 		void OnKeyboardInput()
 		{
-            // disable keyboard hook
-            toggleKeyboardHook(false);
+			// disable keyboard hook
+			toggleKeyboardHook(false);
 
-            if (Window0.Form != null)
+			if (Window0.Form != null)
 				Window0.Form.Close();
 			else
 				Application.Exit();
@@ -729,17 +729,17 @@ namespace Screensavers
 
 		void OnMouseClick()
 		{
-            /*
-            if (closeOnMouseMove)
+			/*
+			if (closeOnMouseMove)
 			{
 				if (Window0.Form != null)
 					Window0.Form.Close();
 				else
-                {                    
-                    Application.Exit();
-                }					
+				{                    
+					Application.Exit();
+				}					
 			}
-            */
+			*/
 		}
 
 		/// <summary>
@@ -766,9 +766,9 @@ namespace Screensavers
 				form.KeyUp += new KeyEventHandler(form_KeyUp);
 				form.KeyPress += new KeyPressEventHandler(form_KeyPress);
 
-                //form.BackColor = Color.Lime;
-                //form.TransparencyKey = Color.Lime;
-                form.Opacity = 0.01;
+				//form.BackColor = Color.Lime;
+				//form.TransparencyKey = Color.Lime;
+				form.Opacity = 0.01;
 
 				this.screensaver.PreUpdate += new EventHandler(screensaver_PreUpdate);
 				this.screensaver.PostUpdate += new EventHandler(screensaver_PostUpdate);
@@ -785,7 +785,7 @@ namespace Screensavers
 				this.screensaver.PostUpdate += new EventHandler(screensaver_PostUpdate);
 			}
 
-            bool doubleBuffer = false;
+			bool doubleBuffer = false;
 			bool doubleBufferSet = false;
 
 			/// <summary>
@@ -847,38 +847,38 @@ namespace Screensavers
 				}
 			}
 
-            #region Keyboard and Mouse Events
+			#region Keyboard and Mouse Events
 
-            void form_KeyPress(object sender, KeyPressEventArgs e)
+			void form_KeyPress(object sender, KeyPressEventArgs e)
 			{
-                if (KeyPress != null)
-                    KeyPress(this, e);
+				if (KeyPress != null)
+					KeyPress(this, e);
 
-                //screensaver.OnKeyboardInput();
-            }
+				//screensaver.OnKeyboardInput();
+			}
 
 			void form_KeyUp(object sender, KeyEventArgs e)
 			{
-                if (KeyUp != null)
-                    KeyUp(this, e);
+				if (KeyUp != null)
+					KeyUp(this, e);
 
-                if (e.Control && e.KeyCode == Keys.L)
-                {
-                    screensaver.ctrlLPressed = true;
-                    screensaver.OnKeyboardInput();
-                }
-            }
+				if (e.Control && e.KeyCode == Keys.L)
+				{
+					screensaver.ctrlLPressed = true;
+					screensaver.OnKeyboardInput();
+				}
+			}
 
 			void form_KeyDown(object sender, KeyEventArgs e)
 			{
-                if (KeyDown != null)
-                    KeyDown(this, e);
+				if (KeyDown != null)
+					KeyDown(this, e);
 
-                if (e.Control && e.KeyCode == Keys.L)
-                {
-                    screensaver.ctrlLPressed = true;
-                    screensaver.OnKeyboardInput();
-                }
+				if (e.Control && e.KeyCode == Keys.L)
+				{
+					screensaver.ctrlLPressed = true;
+					screensaver.OnKeyboardInput();
+				}
 			}
 
 			void form_MouseWheel(object sender, MouseEventArgs e)
