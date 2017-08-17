@@ -18,6 +18,7 @@ namespace InvisibleLockscreen
 
 Based on:
 Screensaver.cs © Rei Miyasaka 2006 rei@thefraser.com";
+            this.WindowTitle = InvisbleLockScreen.Properties.Resources.WindowTitle;
         }
 
         [STAThread]

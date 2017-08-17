@@ -493,6 +493,17 @@ namespace Screensavers
 			previewShutdownEvent.WaitOne();
 		}
 
+		string windowTitle = "";
+
+		/// <summary>
+		/// Gets or sets text to be displayed in the taskbar window title.
+		/// </summary>
+		public string WindowTitle
+		{
+			get { return windowTitle; }
+			set { windowTitle = value; }
+		}
+
 		private void RunNormal()
 		{
 			Cursor.Hide();
@@ -521,7 +532,7 @@ namespace Screensavers
 			primary.TopMost = true;
 #endif
 			primary.FormBorderStyle = FormBorderStyle.None;
-			primary.Text = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
+			primary.Text = WindowTitle;
 			primary.Icon = InvisbleLockScreen.Properties.Resources.icon;
 
 			foreach (Screen screen in Screen.AllScreens)
@@ -575,7 +586,7 @@ namespace Screensavers
 #endif
 			form.FormBorderStyle = FormBorderStyle.None;
 			form.StartPosition = FormStartPosition.Manual;
-			form.Text = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
+			form.Text = WindowTitle;
 			form.Icon = InvisbleLockScreen.Properties.Resources.icon;
 
 			windows = new WindowCollection(new Window[] { new Window(this, form) });
@@ -597,7 +608,7 @@ namespace Screensavers
 		{
 			Form form = new Form();
 			form.FormBorderStyle = FormBorderStyle.FixedSingle;
-			form.Text = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
+			form.Text = WindowTitle;
 			form.Icon = InvisbleLockScreen.Properties.Resources.icon;
 			form.StartPosition = FormStartPosition.CenterScreen;
 			form.BackColor = Color.Black;
