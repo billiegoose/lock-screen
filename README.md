@@ -1,19 +1,24 @@
 # Transparent Lock Screen for Windows 
 (also a transparent screensaver)
 
-It's a screensaver with 1% opacity. Unlike most screensavers, it doesn't end on mouse movement, just on clicks or
-keyboard presses. And the last thing it does before it exists is call LockWorkStation() so if someone
-tries to use your computer, they'll be presented with the Windows lockscreen.
+It's a screensaver with 1% opacity. Unlike most screensavers, it doesn't end on mouse movement.
+In fact, it blocks mouse clicks and keyboard events until you kill the screensaver with the
+keyboard shortcut `Ctrl + L`. Although `Ctrl+Alt+Delete` isn't blocked, launching the Task Manager
+is ineffective because the screensaver steals the focus again, so you aren't able to use the Task Manager,
+just look at it wistfully. The last thing it does before it exits is call LockWorkStation(),
+so if someone tries to use your computer, even after they unlock the screensaver with Ctrl + L
+they will be presented with the Windows lockscreen with the Windows password prompt.
 None of your co-workers will be pranking you now!
 
-_Currently a derivative of [Write a Screensaver that Actually Works](http://www.codeproject.com/Articles/14081/Write-a-Screensaver-that-Actually-Works),
-however I am slowly ripping out the guts to simplify it._
+The code itself is a derivative of [Write a Screensaver that Actually Works](http://www.codeproject.com/Articles/14081/Write-a-Screensaver-that-Actually-Works),
+with some of the guts ripped out to simplify it.
 
 ## Download
 There is a [compiled version available](https://github.com/wmhilton/lock-screen/releases).
 
 ## Current Status
-It's a personal project. Feel free to download the source & compile it, or use it as a base for a new screensaver project. I am not actively working on this project now that I telecommute and have no physically copresent coworkers trying to prank me.
+I am not actively working on this project now that I telecommute and have no physically copresent coworkers trying to prank me,
+but I will gladly accept pull requests.
 
 ## To Use Manually
 Set up a trigger of some sort (say with AutoHotKey) to run "InvisibleLockScreen.scr /s".
