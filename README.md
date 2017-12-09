@@ -1,4 +1,4 @@
-# Transparent Lock Screen for Windows 
+# Transparent Lock Screen for Windows
 (also a transparent screensaver)
 
 It's a screensaver with 1% opacity. Unlike most screensavers, it doesn't end on mouse movement.
@@ -12,6 +12,9 @@ None of your co-workers will be pranking you now!
 
 The code itself is a derivative of [Write a Screensaver that Actually Works](http://www.codeproject.com/Articles/14081/Write-a-Screensaver-that-Actually-Works),
 with some of the guts ripped out to simplify it.
+
+## Known issues
+Windows 10 appears to have issues with transparent screensavers. (Issue [#2](https://github.com/wmhilton/lock-screen/issues/2#issuecomment-328207687))
 
 ## Download
 There is a [compiled version available](https://github.com/wmhilton/lock-screen/releases).
@@ -36,3 +39,5 @@ Pro Key Lock, for instance, freaked out when I turned on Sticky Keys for my RSI 
 After that, I felt there had to be a simpler way to do it that took advantage of Windows native lock screen abilities. So
 I made this in about 3 hours.
 
+# License
+MIT
